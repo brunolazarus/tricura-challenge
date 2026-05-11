@@ -15,9 +15,9 @@ export function formatMoneyFull(value: number): string {
   return `$${value.toLocaleString()}`
 }
 
-export function formatDate(dateStr: string): string {
+export function formatDate(dateStr: string, pattern = 'MMM d, yyyy'): string {
   try {
-    return format(parseISO(dateStr), 'MMM d, yyyy')
+    return format(parseISO(dateStr), pattern)
   } catch {
     return dateStr
   }

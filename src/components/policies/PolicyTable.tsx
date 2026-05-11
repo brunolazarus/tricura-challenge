@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   Table,
@@ -8,6 +9,7 @@ import {
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PolicyRow } from './PolicyRow'
+import { PolicyExpandedRow } from './PolicyExpandedRow'
 import type { PolicyListItem } from '@/types/policy'
 
 const COLUMNS = [
@@ -18,16 +20,14 @@ const COLUMNS = [
   { label: 'Effective Date', className: 'w-36' },
   { label: 'Premium', className: 'w-32 text-right' },
   { label: 'Claims Total', className: 'w-32 text-right' },
-  { label: 'Risk', className: 'w-32' },
+  { label: 'Risk', className: 'w-36' },
 ]
 
 interface Props {
   policies: PolicyListItem[]
-  isLoading: boolean
-  limit: number
 }
 
-export function PolicyTable({ policies, isLoading, limit }: Props) {
+export function PolicyTable({ policies }: Props) {
   const [searchParams] = useSearchParams()
   const expandedId = searchParams.get('policy')
 
@@ -46,15 +46,36 @@ export function PolicyTable({ policies, isLoading, limit }: Props) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {isLoading
-          ? Array.from({ length: limit }).map((_, i) => <SkeletonRow key={i} />)
-          : policies.map((policy) => (
-              <PolicyRow
-                key={policy.id}
-                policy={policy}
-                isExpanded={expandedId === policy.id}
-              />
-            ))}
+        {policies.map((policy) => (
+          <Fragment key={policy.id}>
+            <PolicyRow policy={policy} isExpanded={expandedId === policy.id} />
+            {expandedId === policy.id && <PolicyExpandedRow id={policy.id} />}
+          </Fragment>
+        ))}
+      </TableBody>
+    </Table>
+  )
+}
+
+export function PolicyTableSkeleton({ limit }: { limit: number }) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow className="hover:bg-transparent">
+          {COLUMNS.map((col) => (
+            <TableHead
+              key={col.label}
+              className={`text-xs font-semibold uppercase tracking-wide text-muted-foreground h-10 ${col.className}`}
+            >
+              {col.label}
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {Array.from({ length: limit }).map((_, i) => (
+          <SkeletonRow key={i} />
+        ))}
       </TableBody>
     </Table>
   )
