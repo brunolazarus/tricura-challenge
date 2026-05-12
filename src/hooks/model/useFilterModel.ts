@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { Region, PolicyListParams } from '@/types/policy'
 
@@ -36,8 +37,23 @@ function parseNum(raw: string | null): number | null {
   return isNaN(n) ? null : n
 }
 
-export function useFilterParams() {
+function setNumParam(
+  params: URLSearchParams,
+  key: string,
+  value: number | null,
+  defaultValue: number,
+) {
+  if (value !== null && value !== defaultValue) {
+    params.set(key, String(value))
+  } else {
+    params.delete(key)
+  }
+}
+
+export function useFilterModel() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const [searchDraft, setSearchDraft] = useState(searchParams.get('search') ?? '')
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const filters: ActiveFilters = {
     search: searchParams.get('search') ?? '',
@@ -55,8 +71,7 @@ export function useFilterParams() {
   const page = Math.max(1, Number(searchParams.get('page') ?? '1'))
   const limit = Number(searchParams.get('limit') ?? '20')
 
-  // API only supports a single region param — pass it when exactly one is selected.
-  // Multi-region selection is stored in URL but falls back to unfiltered on the API side.
+  // API only supports a single region param — omit when >1 selected.
   function toPolicyListParams(): PolicyListParams {
     return {
       page,
@@ -74,12 +89,16 @@ export function useFilterParams() {
     }
   }
 
-  function applySearch(value: string) {
-    const next = new URLSearchParams(searchParams)
-    if (value) next.set('search', value)
-    else next.delete('search')
-    next.set('page', '1')
-    setSearchParams(next, { replace: true })
+  function setSearch(value: string) {
+    setSearchDraft(value)
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    searchTimerRef.current = setTimeout(() => {
+      const next = new URLSearchParams(searchParams)
+      if (value) next.set('search', value)
+      else next.delete('search')
+      next.set('page', '1')
+      setSearchParams(next, { replace: true })
+    }, 300)
   }
 
   function applyFilters(values: Omit<ActiveFilters, 'search'>) {
@@ -117,7 +136,9 @@ export function useFilterParams() {
     setSearchParams(next, { replace: true })
   }
 
-  function clearAllFilters() {
+  function clearAll() {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    setSearchDraft('')
     const next = new URLSearchParams()
     const l = searchParams.get('limit')
     if (l) next.set('limit', l)
@@ -136,27 +157,15 @@ export function useFilterParams() {
 
   return {
     filters,
+    searchDraft,
     page,
     limit,
     activeFilterCount,
     hasAnyFilter,
     toPolicyListParams,
-    applySearch,
+    setSearch,
     applyFilters,
     dismissFilter,
-    clearAllFilters,
-  }
-}
-
-function setNumParam(
-  params: URLSearchParams,
-  key: string,
-  value: number | null,
-  defaultValue: number,
-) {
-  if (value !== null && value !== defaultValue) {
-    params.set(key, String(value))
-  } else {
-    params.delete(key)
+    clearAll,
   }
 }

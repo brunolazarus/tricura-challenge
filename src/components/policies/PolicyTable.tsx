@@ -1,35 +1,36 @@
-import { Fragment } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Fragment } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Table,
   TableBody,
+  TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Skeleton } from '@/components/ui/skeleton'
-import { PolicyRow } from './PolicyRow'
-import { PolicyExpandedRow } from './PolicyExpandedRow'
-import type { PolicyListItem } from '@/types/policy'
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PolicyRow } from "./PolicyRow";
+import { PolicyExpandedRow } from "./PolicyExpandedRow/PolicyExpandedRow";
+import type { PolicyListItem } from "@/types/policy";
 
 const COLUMNS = [
-  { label: '', className: 'w-4' },
-  { label: 'Account Name', className: 'min-w-[200px]' },
-  { label: 'Region', className: 'w-36' },
-  { label: 'Facilities', className: 'w-24 text-right' },
-  { label: 'Effective Date', className: 'w-36' },
-  { label: 'Premium', className: 'w-32 text-right' },
-  { label: 'Claims Total', className: 'w-32 text-right' },
-  { label: 'Risk', className: 'w-36' },
-]
+  { label: "", className: "w-4" },
+  { label: "Account Name", className: "min-w-[200px]" },
+  { label: "Region", className: "w-36" },
+  { label: "Facilities", className: "w-24 text-right" },
+  { label: "Effective Date", className: "w-36" },
+  { label: "Premium", className: "w-32 text-right" },
+  { label: "Claims Total", className: "w-32 text-right" },
+  { label: "Risk", className: "w-36" },
+];
 
 interface Props {
-  policies: PolicyListItem[]
+  policies: PolicyListItem[];
 }
 
 export function PolicyTable({ policies }: Props) {
-  const [searchParams] = useSearchParams()
-  const expandedId = searchParams.get('policy')
+  const [searchParams] = useSearchParams();
+  const expandedId = searchParams.get("policy");
 
   return (
     <Table>
@@ -54,7 +55,7 @@ export function PolicyTable({ policies }: Props) {
         ))}
       </TableBody>
     </Table>
-  )
+  );
 }
 
 export function PolicyTableSkeleton({ limit }: { limit: number }) {
@@ -78,37 +79,37 @@ export function PolicyTableSkeleton({ limit }: { limit: number }) {
         ))}
       </TableBody>
     </Table>
-  )
+  );
 }
 
 function SkeletonRow() {
   return (
     <TableRow className="hover:bg-transparent">
-      <TableHead className="w-4" />
-      <TableHead>
+      <TableCell className="w-4 pl-4" />
+      <TableCell className="py-3">
         <div className="space-y-1.5">
           <Skeleton className="h-3.5 w-36" />
           <Skeleton className="h-3 w-20" />
         </div>
-      </TableHead>
-      <TableHead>
+      </TableCell>
+      <TableCell>
         <Skeleton className="h-5 w-20 rounded-full" />
-      </TableHead>
-      <TableHead className="text-right">
+      </TableCell>
+      <TableCell className="text-right">
         <Skeleton className="h-3.5 w-6 ml-auto" />
-      </TableHead>
-      <TableHead>
+      </TableCell>
+      <TableCell>
         <Skeleton className="h-3.5 w-24" />
-      </TableHead>
-      <TableHead className="text-right">
+      </TableCell>
+      <TableCell className="text-right">
         <Skeleton className="h-3.5 w-16 ml-auto" />
-      </TableHead>
-      <TableHead className="text-right">
+      </TableCell>
+      <TableCell className="text-right">
         <Skeleton className="h-3.5 w-16 ml-auto" />
-      </TableHead>
-      <TableHead>
+      </TableCell>
+      <TableCell>
         <Skeleton className="h-3.5 w-20" />
-      </TableHead>
+      </TableCell>
     </TableRow>
-  )
+  );
 }

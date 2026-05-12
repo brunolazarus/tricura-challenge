@@ -44,25 +44,14 @@
 
 ---
 
-## Phase 4 — Create & Edit Policy 🔲
+## Phase 4 — Create & Edit Policy ✅
 
-- 🔲 `src/components/policies/PolicyForm.tsx`
-  - Shared form for create and edit
-  - react-hook-form + zod schema matching `CreatePolicyPayload`
-  - Fields: account (name, region, facilityCount), renewal (effectiveDate), compliance (missingDocuments, expiredDocuments, pendingReviews), financials (premium, claimsTotal, reimbursementRisk)
-  - PendingReview sub-form with add/remove rows
-
-- 🔲 `src/components/policies/PolicyDrawer.tsx`
-  - Sheet/drawer wrapper that reads `?edit=true` + `?policy=<id>` from the URL
-  - Create mode: opens when path is `/policies/new` or "+ NEW POLICY" is clicked
-  - Edit mode: pre-fills from `usePolicy(id)` cache
-  - Submit → createPolicy / updatePolicy → invalidate queries → toast → close
-
-- 🔲 Wire "+ NEW POLICY" button in Dashboard to open drawer (set `?new=true` or navigate to `/policies/new`)
-
-- 🔲 Delete button inside edit drawer
-  - Confirmation dialog
-  - On confirm: deletePolicy → invalidate ['policies'] → close drawer → toast
+- ✅ `src/components/ui/field-box.tsx` — FieldBox floating-label input container, used in both modals
+- ✅ `src/components/ui/sheet.tsx` — slide-in sheet (built but superseded by Dialog for policy form)
+- ✅ `src/components/policies/PolicyForm.tsx` — react-hook-form + zod, flat schema, FieldBox inputs, sections: Account / Renewal (with computed days) / Financials / Reimbursement Risk / Compliance / Pending Reviews (horizontal rows, inline add button)
+- ✅ `src/components/policies/PolicyDrawer.tsx` — centered Dialog (`max-w-2xl`), URL-driven (`?new=true` = create, `?policy=<id>&edit=true` = edit), account name strip in edit mode, delete confirmation dialog, all mutations with toast + query invalidation
+- ✅ Wired "+ NEW POLICY" button in Dashboard (`?new=true`)
+- ✅ FilterModal updated to use FieldBox for date/range inputs
 
 ---
 
