@@ -28,7 +28,7 @@ export function PolicyDrawer() {
       }}
     >
       <DialogContent
-        className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden"
+        className="max-w-252 max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden"
         showCloseButton={false}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">

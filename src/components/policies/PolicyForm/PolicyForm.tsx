@@ -224,7 +224,7 @@ export function PolicyForm(props: PolicyFormProps) {
           {fields.map((field, i) => (
             <div
               key={field.id}
-              className="grid grid-cols-[1fr_150px_120px_auto] gap-2 items-end"
+              className="grid grid-cols-2 sm:grid-cols-[1fr_150px_120px_auto] gap-2 items-end"
             >
               <FieldBox
                 label="Type"

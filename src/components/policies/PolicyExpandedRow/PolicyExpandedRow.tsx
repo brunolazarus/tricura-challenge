@@ -73,7 +73,7 @@ function ExpandedContent({
         : "text-foreground";
 
   return (
-    <div className="grid grid-cols-[1fr_1.4fr_1.6fr] divide-x divide-blue-100 px-0">
+    <div className="grid grid-cols-1 md:grid-cols-[1fr_1.4fr_1.6fr] divide-y md:divide-y-0 md:divide-x divide-blue-100 px-0">
       {/* Panel 1 — Renewal & Account */}
       <div className="px-6 py-4 space-y-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -201,7 +201,7 @@ function DetailField({
 
 function ExpandedSkeleton() {
   return (
-    <div className="grid grid-cols-[1fr_1.4fr_1.6fr] divide-x divide-blue-100 px-0">
+    <div className="grid grid-cols-1 md:grid-cols-[1fr_1.4fr_1.6fr] divide-y md:divide-y-0 md:divide-x divide-blue-100 px-0">
       {[0, 1, 2].map((i) => (
         <div key={i} className="px-6 py-4 space-y-3">
           <Skeleton className="h-3 w-24" />

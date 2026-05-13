@@ -19,8 +19,8 @@ export function Pagination({ pagination }: Props) {
     usePaginationPresenter(pagination)
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-white">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 py-3 border-t border-border">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground shrink-0">
         <span>Rows per page:</span>
         <Select value={String(limit)} onValueChange={setLimit}>
           <SelectTrigger className="h-7 w-16 text-sm">
@@ -36,7 +36,7 @@ export function Pagination({ pagination }: Props) {
         </Select>
       </div>
 
-      <div className="flex items-center gap-1 text-sm">
+      <div className="flex items-center gap-1 text-sm flex-wrap justify-end">
         <span className="text-muted-foreground mr-2">
           {from}–{to} of {total}
         </span>

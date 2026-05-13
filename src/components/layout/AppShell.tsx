@@ -8,7 +8,7 @@ export function AppShell() {
           Tricura Insurance Group
         </span>
       </header>
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto bg-slate-50 flex flex-col sm:p-6 lg:p-8">
         <Outlet />
       </main>
     </div>

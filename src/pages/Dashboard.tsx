@@ -27,38 +27,40 @@ export function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <FilterBar />
+    <div className="flex flex-col flex-1 min-h-0">
+      <div className="flex flex-col flex-1 min-h-0 w-full max-w-7xl mx-auto sm:rounded-xl sm:border sm:border-border sm:shadow-sm overflow-hidden bg-white">
+        <FilterBar />
 
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-white shrink-0">
-          <h1 className="text-base font-semibold text-foreground">Policies</h1>
-          <Button
-            size="sm"
-            className="text-xs font-semibold tracking-wide"
-            onClick={openNewPolicy}
-          >
-            + NEW POLICY
-          </Button>
-        </div>
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+            <h1 className="text-base font-semibold text-foreground">Policies</h1>
+            <Button
+              size="sm"
+              className="text-xs font-semibold tracking-wide"
+              onClick={openNewPolicy}
+            >
+              + NEW POLICY
+            </Button>
+          </div>
 
-        <ErrorBoundary
-          fallback={(error, reset) => (
-            <div className="flex-1 overflow-auto bg-white">
-              <ErrorState message={error.message} onRetry={reset} />
-            </div>
-          )}
-        >
-          <Suspense
-            fallback={
-              <div className="flex-1 overflow-auto bg-white">
-                <PolicyTableSkeleton limit={limit} />
+          <ErrorBoundary
+            fallback={(error, reset) => (
+              <div className="flex-1 overflow-auto">
+                <ErrorState message={error.message} onRetry={reset} />
               </div>
-            }
+            )}
           >
-            <PoliciesSection />
-          </Suspense>
-        </ErrorBoundary>
+            <Suspense
+              fallback={
+                <div className="flex-1 overflow-auto">
+                  <PolicyTableSkeleton limit={limit} />
+                </div>
+              }
+            >
+              <PoliciesSection />
+            </Suspense>
+          </ErrorBoundary>
+        </div>
       </div>
 
       <PolicyDrawer />
@@ -72,7 +74,7 @@ function PoliciesSection() {
 
   return (
     <>
-      <div className="flex-1 overflow-auto bg-white">
+      <div className="flex-1 overflow-auto">
         {isEmpty ? (
           <EmptyState hasFilters={hasAnyFilter} />
         ) : (
