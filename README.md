@@ -10,7 +10,7 @@ npm install && npm run dev   # requires the API server running at :4000
 
 **Stack:** React 19 · Vite · TypeScript · Tailwind CSS v4 · TanStack Query v5 · React Router v7 · react-hook-form + zod · axios · sonner
 
-**Key calls made:** URL-first state (all filters survive reload), presenter pattern (views contain zero logic), `daysUntilRenewal` treated as server-owned, status filter omitted (no API field), multi-region UI degrades gracefully when API limitation is hit.
+**Key calls made:** URL-first state (all filters survive reload), presenter pattern (views contain zero logic), `daysUntilRenewal` client-computed and sent on every save (API stores it verbatim — confirmed via live spec), status filter omitted (no API field), multi-region UI degrades gracefully when API limitation is hit.
 
 ---
 
@@ -139,9 +139,9 @@ ComponentName/
 
 The assessment spec mentions filtering by status. The API exposes no `status` field on any endpoint — not on `GET /policies`, not on `GET /policies/:id`. Rather than build a UI control with no backend support, the filter was omitted. If the field is added to the API it slots directly into `useFilterModel` and `FilterModal` with no structural changes needed.
 
-### `daysUntilRenewal` — server-owned, never sent by the client
+### `daysUntilRenewal` — client-computed, sent on every save
 
-`GET /policies/:id` returns `renewal.daysUntilRenewal` as a computed integer. `CreatePolicyPayload` and `UpdatePolicyPayload` intentionally exclude it — clients only send `effectiveDate` and let the server derive the days value. Sending a client-computed snapshot would produce stale data on every subsequent read.
+Confirmed via the live OpenAPI spec and a test POST: `daysUntilRenewal` is **required** in the `POST /policies` request body and the server stores it verbatim — it does not derive it from `effectiveDate`. The client computes it with `date-fns` before every create or update so the stored value stays accurate. The PATCH schema marks it optional, but sending a freshly computed value on edits avoids the stored number going stale if the policy is saved again after the effective date passes.
 
 ### Multi-region filter — UI-only, degrades gracefully
 

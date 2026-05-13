@@ -27,14 +27,15 @@ describe('buildPayload', () => {
   it('maps flat form values to the nested API payload shape', () => {
     const payload = buildPayload(baseFormValues)
     expect(payload.account).toEqual({ name: 'Acme Health', region: 'Northeast', facilityCount: 3 })
-    expect(payload.renewal).toEqual({ effectiveDate: '2026-07-01' })
+    expect(payload.renewal).toEqual({ effectiveDate: '2026-07-01', daysUntilRenewal: expect.any(Number) })
     expect(payload.financials).toEqual({ premium: 200_000, claimsTotal: 50_000, reimbursementRisk: 0.45 })
     expect(payload.compliance).toEqual({ missingDocuments: 2, expiredDocuments: 1, pendingReviews: [] })
   })
 
-  it('does not include daysUntilRenewal (server-computed field)', () => {
+  it('includes a client-computed daysUntilRenewal (required by POST, stored verbatim by the API)', () => {
     const payload = buildPayload(baseFormValues)
-    expect(payload.renewal).not.toHaveProperty('daysUntilRenewal')
+    expect(payload.renewal).toHaveProperty('daysUntilRenewal')
+    expect(typeof payload.renewal.daysUntilRenewal).toBe('number')
   })
 
   it('includes pending reviews in the payload', () => {
