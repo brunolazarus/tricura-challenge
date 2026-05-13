@@ -10,7 +10,7 @@ npm install && npm run dev   # requires the API server running at :4000
 
 **Stack:** React 19 · Vite · TypeScript · Tailwind CSS v4 · TanStack Query v5 · React Router v7 · react-hook-form + zod · axios · sonner
 
-**Key calls made:** URL-first state (all filters survive reload), presenter pattern (views contain zero logic), `daysUntilRenewal` client-computed and sent on every save (API stores it verbatim — confirmed via live spec), status filter omitted (no API field), multi-region UI degrades gracefully when API limitation is hit.
+**Key calls made:** URL-first state (all filters survive reload), presenter pattern (views contain zero logic), `daysUntilRenewal` client-computed and sent on every save, status filter omitted (no API field), multi-region UI degrades gracefully when API limitation is hit.
 
 ---
 
