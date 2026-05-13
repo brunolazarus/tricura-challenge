@@ -56,8 +56,15 @@ export interface Policy {
   }
 }
 
-export type CreatePolicyPayload = Omit<Policy, 'id'>
-export type UpdatePolicyPayload = Partial<Omit<Policy, 'id'>>
+// daysUntilRenewal is server-computed from effectiveDate — never sent by the client
+export interface CreatePolicyPayload {
+  account: Policy['account']
+  renewal: Pick<Policy['renewal'], 'effectiveDate'>
+  compliance: Policy['compliance']
+  financials: Policy['financials']
+}
+
+export type UpdatePolicyPayload = Partial<CreatePolicyPayload>
 
 export interface PolicyListParams {
   page?: number

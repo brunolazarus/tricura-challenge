@@ -1,73 +1,83 @@
-# React + TypeScript + Vite
+# Tricura Policy Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React SPA for insurance underwriters to browse, filter, view, create, edit, and delete policies. Built as a take-home challenge.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 20+
+- The backend API running at `http://localhost:4000` (separate repo)
 
-## React Compiler
+## Getting started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev        # starts Vite dev server (defaults to :5173)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Scripts
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Command | Description |
+|---|---|
+| `npm run dev` | Dev server with HMR |
+| `npm run build` | TypeScript check + Vite production build |
+| `npm run lint` | ESLint |
+| `npm run preview` | Serve the production build locally |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Architecture
+
+The app uses a **three-layer component model**:
+
 ```
+Model hook          (src/hooks/model/)         — TanStack Query + URL state
+Presenter           (Component.presenter.ts)   — derives view-ready data from model
+View                (Component.tsx)            — renders, no business logic
+```
+
+Every complex component (FilterBar, FilterModal, Pagination, PolicyExpandedRow, PolicyForm, PolicyDrawer, Dashboard) has a sibling `.presenter.ts` that owns all derivation logic. Views only call hooks and render JSX.
+
+## Project structure
+
+```
+src/
+├── api/                         # axios client + policy CRUD functions
+├── components/
+│   ├── boundary/                # EmptyState, ErrorState
+│   ├── layout/                  # AppShell (header + outlet)
+│   ├── policies/
+│   │   ├── FilterBar/           # search input + chips + active count
+│   │   ├── FilterModal/         # region/date/range filter dialog
+│   │   ├── Footer/              # Pagination
+│   │   ├── PolicyDrawer/        # create + edit dialog (URL-driven)
+│   │   ├── PolicyExpandedRow/   # 3-panel inline detail
+│   │   ├── PolicyForm/          # react-hook-form + zod form
+│   │   ├── PolicyRow.tsx        # table row (clickable, expand/collapse)
+│   │   ├── PolicyTable.tsx      # table + skeleton
+│   │   ├── RiskBadge.tsx
+│   │   ├── RiskBar.tsx
+│   │   └── SeverityBadge.tsx
+│   └── ui/                      # shadcn/ui + @base-ui/react primitives
+├── hooks/
+│   └── model/
+│       ├── useFilterModel.ts    # URL param read/write for all filter state
+│       ├── usePoliciesModel.ts  # list query with filter params
+│       ├── usePolicyModel.ts    # single policy query
+│       └── usePolicyMutations.ts# create / update / delete mutations
+├── lib/
+│   ├── format.ts                # formatMoney, formatDate
+│   ├── risk.ts                  # reimbursementRisk → High/Medium/Low
+│   └── utils.ts                 # cn (tailwind-merge + clsx)
+├── pages/
+│   ├── Dashboard.tsx
+│   └── Dashboard.presenter.ts
+└── types/
+    └── policy.ts                # PolicyListItem, Policy, PendingReview, etc.
+```
+
+## Known limitations & deliberate decisions
+
+- **Status filter omitted**: the assessment spec references a status filter, but neither the `GET /policies` list endpoint nor the `GET /policies/:id` detail shape exposes a `status` field. Rather than implement a UI control with no backend support, the filter was omitted. If a status field is added to the API, the filter can be wired up through the existing `useFilterModel` / `FilterModal` pipeline without structural changes.
+- **`daysUntilRenewal` is server-owned**: the API returns this field on `GET /policies/:id` but clients never send it — it is computed by the server from `effectiveDate`. `CreatePolicyPayload` and `UpdatePolicyPayload` intentionally omit it.
+- **Multi-region filter**: the API only accepts a single `region` param. When more than one region is selected the API call omits the filter entirely; all matching regions are shown client-side via chips but not enforced server-side.
+- **No authentication**: the API is assumed to be open on localhost.
+- **No tests**: unit/integration tests are out of scope for this challenge.
+- **Dark mode**: `next-themes` is installed but dark mode is not wired up.

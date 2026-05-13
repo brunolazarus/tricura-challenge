@@ -35,7 +35,7 @@ export function useFilterPresenter() {
   }
 }
 
-function buildChips(f: ActiveFilters): FilterChip[] {
+export function buildChips(f: ActiveFilters): FilterChip[] {
   const chips: FilterChip[] = []
 
   if (f.regions.length > 0) {

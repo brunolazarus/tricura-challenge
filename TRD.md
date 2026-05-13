@@ -9,41 +9,55 @@ A React SPA for insurance underwriters to browse, filter, view, create, edit, an
 | Concern | Choice |
 |---|---|
 | Framework | React 19 + Vite + TypeScript |
-| Styling | Tailwind CSS v4 + shadcn/ui |
+| Styling | Tailwind CSS v4 |
+| UI primitives | @base-ui/react (headless) + shadcn/ui preset |
 | Data fetching | TanStack Query v5 |
 | Routing | React Router v7 |
 | Forms | react-hook-form + zod |
 | HTTP | axios |
 | Notifications | sonner |
+| Date formatting | date-fns |
+
+## Architecture
+
+The app uses a **three-layer component model**:
+
+| Layer | Location | Responsibility |
+|---|---|---|
+| Model hook | `src/hooks/model/` | TanStack Query + URL-param state read/write |
+| Presenter | `ComponentName.presenter.ts` | Derives view-ready data; owns all logic |
+| View | `ComponentName.tsx` | Calls presenter hook, renders JSX only |
+
+Complex components (FilterBar, FilterModal, Pagination, PolicyExpandedRow, PolicyForm, PolicyDrawer, Dashboard) each live in their own folder alongside a `.presenter.ts` sibling.
 
 ## Pages & Routes
 
 | Path | Component | Notes |
 |---|---|---|
 | `/policies` | `Dashboard` | Policy list + filters |
-| `/policies/new` | `Dashboard` | Opens create policy drawer |
 | `*` | redirect → `/policies` | |
+
+> Create and Edit are **not separate routes**. They are triggered by URL query params (`?new=true`, `?edit=true`) on `/policies`, keeping all filter state intact when the drawer opens and closes.
 
 ## Feature Requirements
 
 ### 1. Policy List Table
 
 - Columns: Account Name + ID, Region, Facilities, Effective Date, Premium, Claims Total, Risk
-- Skeleton loading (same row count as page limit)
-- Click row → inline expanded detail panel
-- Click again → collapse
+- Skeleton loading (same row count as current page limit)
+- Click row → inline expanded detail panel; click again → collapse
 - Pagination below table
 
 ### 2. Expanded Row Detail (3 panels)
 
-- **Renewal & Account**: effective date, days to renewal, region, facility count
-- **Financials**: premium, claims, reimbursement risk bar
-- **Compliance**: missing/expired doc counts, pending reviews list with severity badges; EDIT button
+- **Renewal & Account**: effective date, days to renewal (color-coded by urgency), region, facility count
+- **Financials**: premium, claims total, reimbursement risk bar
+- **Compliance**: missing/expired doc counts, pending reviews list with severity badges, EDIT button
 
 ### 3. Filter Bar
 
 - Debounced text search (300 ms) → `?search=`
-- FILTERS button → opens `FilterModal`; shows active count badge
+- FILTERS button → opens FilterModal; shows active count badge
 - Active filter chips with individual × dismiss
 - CLEAR ALL button when any filter is active
 
@@ -57,28 +71,27 @@ A React SPA for insurance underwriters to browse, filter, view, create, edit, an
 - RESET ALL, CANCEL, APPLY FILTERS actions
 - All state is URL-based (`?regions=`, `?dateFrom=`, `?riskMin=`, etc.)
 
-> **API limitation**: `region` param accepts only a single value. Multi-region selection is stored in the URL but falls back to unfiltered at the API level.
+> **API limitation**: `region` param accepts only a single value. When >1 region is selected the API call omits the filter; the chips still display and can be dismissed individually.
 
 ### 5. Create Policy
 
-- Triggered by "+ NEW POLICY" button in the table header
-- Full-page drawer or modal with `react-hook-form` + `zod` schema validation
-- Fields mirror the `CreatePolicyPayload` shape (no `id` — server generates it)
-- On success: invalidate `['policies']` query, show success toast, close form
+- Triggered by "+ NEW POLICY" button → sets `?new=true` in URL
+- Centered Dialog with `react-hook-form` + zod schema validation
+- Fields mirror `CreatePolicyPayload` (no `id` — server generates it)
+- On success: invalidate `['policies']` query, show success toast, close dialog
 
 ### 6. Edit Policy
 
-- Triggered by EDIT button in the expanded compliance panel
-- Sets `?edit=true` in the URL alongside `?policy=<id>`
-- Same form as create but pre-filled from the cached `['policy', id]` data
-- Submits via `PATCH /policies/:id` (arrays are replaced wholesale — send full arrays)
-- On success: invalidate `['policy', id]` and `['policies']` queries, show success toast
+- Triggered by EDIT button in the compliance panel → sets `?edit=true` alongside `?policy=<id>`
+- Same form as create, pre-filled from cached `['policy', id]` data
+- Submits via `PATCH /policies/:id` (arrays replaced wholesale — send full arrays)
+- On success: invalidate `['policy', id]` and `['policies']`, show success toast
 
 ### 7. Delete Policy
 
-- Triggered from the edit form/drawer (delete button or action)
+- Triggered from the edit form (delete button)
 - Confirmation dialog before sending `DELETE /policies/:id`
-- On success: invalidate `['policies']`, close drawer, show toast
+- On success: invalidate `['policies']`, close dialog, show toast
 
 ## Data Model
 
@@ -127,5 +140,16 @@ A React SPA for insurance underwriters to browse, filter, view, create, edit, an
 | `premiumMax` | number | Premium upper bound |
 | `claimsMin` | number | Claims total lower bound |
 | `claimsMax` | number | Claims total upper bound |
-| `policy` | string | Expanded policy ID |
-| `edit` | `"true"` | Edit drawer open |
+| `policy` | string | Expanded/active policy ID |
+| `edit` | `"true"` | Edit drawer open (requires `policy`) |
+| `new` | `"true"` | Create drawer open |
+
+## MVP Scope & Known Limitations
+
+| Item | Status |
+|---|---|
+| Multi-region API filter | Out of scope — API accepts one `region`; multi-select is UI-only |
+| Authentication | Out of scope — API is open on localhost |
+| Unit / integration tests | Out of scope for challenge |
+| Dark mode | Dependency installed (`next-themes`), not wired up |
+| Sorting | Not implemented — API does not expose a sort param |

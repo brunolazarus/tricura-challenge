@@ -75,12 +75,11 @@ export function policyToFormValues(policy: Policy): PolicyFormValues {
   }
 }
 
-function buildPayload(values: PolicyFormValues): CreatePolicyPayload {
+export function buildPayload(values: PolicyFormValues): CreatePolicyPayload {
   return {
     account: { name: values.accountName, region: values.region, facilityCount: values.facilityCount },
     renewal: {
       effectiveDate: values.effectiveDate,
-      daysUntilRenewal: differenceInCalendarDays(parseISO(values.effectiveDate), new Date()),
     },
     compliance: {
       missingDocuments: values.missingDocuments,
