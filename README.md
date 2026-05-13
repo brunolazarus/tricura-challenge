@@ -73,6 +73,17 @@ All filter state, pagination, expanded row, and drawer mode are stored in URL se
 
 Mutations invalidate relevant TanStack Query keys on success and let the server be the authority on data shape. For a local mock API responding in <5ms the UX is indistinguishable from optimistic updates, and the code is meaningfully simpler — no rollback logic, no temporary IDs for creates.
 
+**Performance**
+
+| What | How |
+|---|---|
+| Server-side filtering | All filter params are sent to `GET /policies` — the client never loads the full dataset |
+| Query caching | List queries: 30s stale window. Detail queries: 60s. Navigating back to a filtered page within those windows costs zero network |
+| Debounced search | Input updates local state immediately; the URL (and therefore the query key) only changes 300ms after the user stops typing — prevents a network request per keystroke |
+| Scoped loading | `<Suspense>` wraps only the table section; the filter bar and header are never blocked by a loading list |
+| Skeleton sizing | `PolicyTableSkeleton` renders exactly `limit` rows so layout doesn't shift when data arrives |
+| Detail caching | Expanding the same row a second time within 60s is served from cache with no network round-trip |
+
 ---
 
 ## File structure
