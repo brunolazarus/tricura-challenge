@@ -159,3 +159,34 @@ Create and Edit are opened via `?new=true` and `?policy=<id>&edit=true` on the s
 | Dark mode | `next-themes` installed, not wired — out of scope |
 | Sorting | No sort param on the API |
 | Optimistic updates | <5ms local mock makes them imperceptible; not worth the rollback complexity |
+
+---
+
+## Future improvements
+
+### Policy status & lifecycle
+Policies have no `status` field — the assessment spec mentioned one but the API doesn't expose it. Adding `status: 'active' | 'pending' | 'expired' | 'cancelled'` to the API response unlocks a status badge on each table row, a status filter chip in the filter modal (slots into `useFilterModel` and `FilterModal` with no structural changes), and meaningful portfolio-level metrics. This is the highest-value single addition.
+
+### Portfolio analytics
+A `/analytics` route with a KPI bar (total policies, total premium in the filtered set, average risk, policies expiring ≤30 days) and charts — risk distribution histogram, premium vs claims scatter to surface outliers, region breakdown. The KPI bar can be computed from the existing list response client-side; the charts benefit from a `GET /policies?limit=1000` or a dedicated `GET /analytics` summary endpoint so the numbers reflect the full dataset rather than the current page.
+
+### Renewal urgency in the table
+`daysUntilRenewal` is already color-coded in the expanded detail panel. The list response has `effectiveDate` — computing urgency client-side and surfacing it as a row-level highlight (amber border, "Expiring soon" label) in `PolicyRow` requires no API changes and gives underwriters an at-a-glance view of the workload without opening every row.
+
+### Column sorting
+The table has no sort controls. Client-side sort within the current page is a free addition but misleading when paginated — a policy with the highest risk on page 3 would never surface. The full solution is `GET /policies?sortBy=reimbursementRisk&sortOrder=desc` on the API side, with a sort indicator on column headers and `sortBy`/`sortOrder` added to the URL state contract alongside the existing filter params.
+
+### Saved filter presets
+Let users name and save a combination of active filters ("High-risk Northeast Q3"). Stored in `localStorage` as serialized URL param strings for a frontend-only implementation. A proper multi-user version requires `GET /views` / `POST /views` / `DELETE /views/:id` on the API so presets persist across devices and can be shared with a team.
+
+### Compliance document uploads
+The pending review model has `type`, `dueDate`, and `severity` but no attachment. A `POST /policies/:id/documents` multipart endpoint would close the compliance loop — right now you can track that a document is missing but you can't actually submit it. On the frontend, each pending review row in the form would get a file input and a preview of any attached document.
+
+### Audit log
+A `GET /policies/:id/history` endpoint returning a timestamped list of field-level changes (who changed `reimbursementRisk` from 0.4 to 0.8 and when). On the frontend this maps naturally to a fourth panel in the expanded row alongside Renewal, Financials, and Compliance — the panel layout in `PolicyExpandedRow` is already a CSS grid that can accommodate it.
+
+### Bulk operations
+Row-level checkboxes and a floating action bar ("Export 4 selected", "Update status for 4 selected"). Requires a `PATCH /policies` endpoint accepting `{ ids: string[], patch: Partial<Policy> }` for bulk updates. The export path (CSV download) is frontend-only — serialize the selected items from the TanStack Query cache to a `Blob` with no new endpoint needed.
+
+### Facility drill-down
+`facilityCount` is currently an integer. A `/facilities` resource where each facility has its own compliance records, risk score, and address would let underwriters expand a policy and then drill into individual sites. The expanded row already has a panel structure — a facility list inside the Renewal & Account panel is the natural entry point.
