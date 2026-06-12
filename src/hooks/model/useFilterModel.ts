@@ -105,12 +105,23 @@ export function useFilterModel() {
     const next = new URLSearchParams(searchParams)
     next.set('page', '1')
 
-    values.regions.length > 0
-      ? next.set('regions', values.regions.join(','))
-      : next.delete('regions')
+    if (values.regions.length > 0) {
+      next.set('regions', values.regions.join(','))
+    } else {
+      next.delete('regions')
+    }
 
-    values.dateFrom ? next.set('dateFrom', values.dateFrom) : next.delete('dateFrom')
-    values.dateTo ? next.set('dateTo', values.dateTo) : next.delete('dateTo')
+    if (values.dateFrom) {
+      next.set('dateFrom', values.dateFrom)
+    } else {
+      next.delete('dateFrom')
+    }
+
+    if (values.dateTo) {
+      next.set('dateTo', values.dateTo)
+    } else {
+      next.delete('dateTo')
+    }
 
     setNumParam(next, 'riskMin', values.riskMin, FILTER_DEFAULTS.riskMin)
     setNumParam(next, 'riskMax', values.riskMax, FILTER_DEFAULTS.riskMax)
